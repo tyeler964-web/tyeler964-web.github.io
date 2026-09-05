@@ -8,56 +8,21 @@
 </head>
 <body>
   <div id="launcher" class="launcher" aria-hidden="false">
-    <div class="launcher-card">
-      <div class="brand-line"><span class="logo">FS</span><strong>Firefly Studios</strong></div>
-      <h1>Lauching Beta Environment</h1>
-      <p id="loadText">Preparing FL Code Beta…</p>
-      <div class="progress"><div id="progressBar"></div></div>
-      <div class="load-row"><span id="percent">1%</span><span id="size">0.0/6.3mb</span></div>
-    </div>
+    <div class="launcher-card"><div class="brand-line"><span class="logo">FS</span><strong>Firefly Studios</strong></div><h1 id="launchTitle">Lauching Beta Environment</h1><p>Loading FL Code Beta…</p><div class="progress"><div id="progressBar"></div></div><div class="load-row"><span id="percent">1%</span><span id="size">0.0/6.3mb</span></div></div>
   </div>
+  <div id="returnLauncher" class="launcher hidden" aria-hidden="true"><div class="launcher-card"><div class="brand-line"><span class="logo">FS</span><strong>Firefly Studios</strong></div><h1>Returning to Normal Mode</h1><p>Launching normal Firefly Studios environment…</p><div class="progress"><div id="returnProgressBar"></div></div><div class="load-row"><span id="returnPercent">1%</span><span>20 seconds</span></div></div></div>
 
   <div id="app" class="app hidden">
-    <header class="topbar">
-      <div class="brand-line"><span class="logo">FS</span><strong>FL Code Beta</strong><span class="version">B1.5.0</span></div>
-      <div class="top-actions"><button id="runButton" class="run">▶ Run</button><button id="resetButton">Reset workspace</button></div>
-    </header>
-    <div class="workspace">
-      <aside class="sidebar">
-        <button class="category active" data-view="home"><span>⌂</span><b>Home</b></button>
-        <button class="category" data-view="files"><span>▤</span><b>Files</b></button>
-        <button class="category" data-view="editor"><span>✎</span><b>Editor</b></button>
-        <button class="category" data-view="console"><span>›_</span><b>Output</b></button>
-      </aside>
-
+    <header class="topbar"><div class="brand-line"><span class="logo">FS</span><strong>FL Code Beta</strong><span class="version">B1.5.0</span></div><div class="top-actions"><button id="runButton" class="run">▶ Run</button><button id="normalModeButton">Normal Mode</button><button id="resetButton">Reset workspace</button></div></header>
+    <div class="workspace"><aside class="sidebar"><button class="category active" data-view="home"><span>⌂</span><b>Home</b></button><button class="category" data-view="files"><span>▤</span><b>Files</b></button><button class="category" data-view="editor"><span>✎</span><b>Editor</b></button><button class="category" data-view="console"><span>›_</span><b>Output</b></button></aside>
       <main class="main">
-        <section id="view-home" class="view active-view">
-          <div class="welcome"><p class="eyebrow">FIREFLY STUDIOS • BETA</p><h1>FL Code Beta</h1><p>A lightweight browser coding workspace with a file tree, editor, project actions, and output console.</p><div class="home-grid"><button class="home-card" data-view="files"><strong>File Explorer</strong><span>Create, move, hide, download and delete files.</span></button><button class="home-card" data-view="editor"><strong>Code Editor</strong><span>Work with JavaScript, TypeScript, Java and more.</span></button><button class="home-card" data-view="console"><strong>Output / Console</strong><span>See run output and workspace events.</span></button></div></div>
-        </section>
-
-        <section id="view-files" class="view">
-          <div class="section-head"><div><p class="eyebrow">PROJECT</p><h2>File Explorer</h2></div><div class="toolbar"><button id="newFile">＋ File</button><button id="newFolder">＋ Folder</button><button id="newNetwork">＋ Network / Database</button><button id="newPackage">＋ Package / API</button></div></div>
-          <div class="explorer" id="explorer" tabindex="0" aria-label="Project file tree"></div>
-          <p class="hint">Left-click a file/folder icon to select it. Right-click an item for actions.</p>
-        </section>
-
-        <section id="view-editor" class="view">
-          <div class="section-head"><div><p class="eyebrow">CODE</p><h2 id="editorTitle">Editor</h2></div><select id="languageSelect" aria-label="Programming language"></select></div>
-          <div class="editor-wrap"><textarea id="editor" spellcheck="false" aria-label="Code editor"></textarea></div>
-        </section>
-
-        <section id="view-console" class="view">
-          <div class="section-head"><div><p class="eyebrow">OUTPUT</p><h2>Console</h2></div><button id="clearConsole">Clear</button></div>
-          <pre id="console" class="console" aria-live="polite"></pre>
-        </section>
+        <section id="view-home" class="view active-view"><div class="welcome"><p class="eyebrow">FIREFLY STUDIOS • BETA</p><h1>FL Code Beta</h1><p>A lightweight browser coding workspace with a file tree, editor, project actions, and output console.</p><div class="home-grid"><button class="home-card" data-view="files"><strong>File Explorer</strong><span>Create, move, hide, download and delete files.</span></button><button class="home-card" data-view="editor"><strong>Code Editor</strong><span>Work with JavaScript, TypeScript, Java and more.</span></button><button class="home-card" data-view="console"><strong>Output / Console</strong><span>See run output and workspace events.</span></button></div></div></section>
+        <section id="view-files" class="view"><div class="section-head"><div><p class="eyebrow">PROJECT</p><h2>File Explorer</h2></div><div class="toolbar"><button id="newFile">＋ File</button><button id="newFolder">＋ Folder</button><button id="newNetwork">＋ Network / Database</button><button id="newPackage">＋ Package / API</button></div></div><div class="explorer" id="explorer" tabindex="0" aria-label="Project file tree"></div><p class="hint">Left-click a file/folder icon to select it. Right-click an item for actions.</p></section>
+        <section id="view-editor" class="view"><div class="section-head"><div><p class="eyebrow">CODE</p><h2 id="editorTitle">Editor</h2></div><select id="languageSelect" aria-label="Programming language"></select></div><div class="editor-wrap"><textarea id="editor" spellcheck="false" aria-label="Code editor"></textarea></div></section>
+        <section id="view-console" class="view"><div class="section-head"><div><p class="eyebrow">OUTPUT</p><h2>Console</h2></div><button id="clearConsole">Clear</button></div><pre id="console" class="console" aria-live="polite"></pre></section>
       </main>
     </div>
-    <div id="contextMenu" class="context-menu" role="menu" hidden>
-      <button data-action="select">Select</button><button data-action="move">Move</button><button data-action="download">Download</button><button data-action="zip">Zip</button><button data-action="hide">Turn into hidden file</button><button data-action="delete" class="danger">Delete</button>
-    </div>
-    <div id="toast" class="toast" role="status"></div>
+    <div id="contextMenu" class="context-menu" role="menu" hidden><button data-action="select">Select</button><button data-action="move">Move</button><button data-action="download">Download</button><button data-action="zip">Zip</button><button data-action="hide">Turn into hidden file</button><button data-action="delete" class="danger">Delete</button></div><div id="toast" class="toast" role="status"></div>
   </div>
-  <script src="backend.js"></script>
-  <script src="app.js"></script>
-</body>
-</html>
+  <script src="backend.js"></script><script src="app.js"></script><script src="../update-overlay.js"></script>
+</body></html>
