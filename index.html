@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PaperLive — Minecraft Bedrock & Java server plugins, addons and live server tools by Firefly Studios.">
+  <title>PaperLive — Firefly Studios</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="PaperLive home"><span class="brand-mark">PL</span><span>PaperLive</span></a>
+    <button class="menu" id="menuButton" aria-label="Open navigation">☰</button>
+    <nav id="nav">
+      <a href="#home">Home</a><a href="#dashboard">Dashboard</a><a href="#plugins">Plugins</a><a href="#downloads">Downloads</a><a href="#docs">Docs</a><a href="#connect">Connect</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">FIREFLY STUDIOS • MINECRAFT</p>
+        <h1>PaperLive</h1>
+        <p class="lead">Plugins, addons and web tools for Minecraft Bedrock & Java servers.</p>
+        <div class="actions"><a class="button primary" href="#dashboard">Open Dashboard</a><a class="button secondary" href="#plugins">Explore Plugins</a></div>
+      </div>
+      <div class="hero-card"><div class="pulse"></div><span class="status-label">PAPERLIVE WEB</span><strong>GitHub Pages</strong><small>Static web client • ready to connect to your server API</small></div>
+    </section>
+
+    <section class="stats" aria-label="PaperLive highlights">
+      <div><strong>Java</strong><span>Paper server support</span></div><div><strong>Bedrock</strong><span>Geyser / Floodgate ready</span></div><div><strong>Live</strong><span>Server dashboard tools</span></div><div><strong>Web</strong><span>GitHub Pages hosted</span></div>
+    </section>
+
+    <section id="dashboard" class="section">
+      <div class="section-heading"><p class="eyebrow">SERVER DASHBOARD</p><h2>Connect to PaperLive</h2><p>Enter the web API address exposed by your PaperLive server plugin. This GitHub Pages site stays static; server data is requested directly from the API in your browser.</p></div>
+      <div class="panel connect-panel">
+        <label>Web API URL<input id="apiUrl" type="url" placeholder="https://your-server.example/api"></label>
+        <label>API Key<input id="apiKey" type="password" placeholder="Optional API key"></label>
+        <div class="actions"><button class="button primary" id="connectButton">Connect</button><button class="button secondary" id="clearButton">Clear</button></div>
+        <p id="connectStatus" class="status">Not connected.</p>
+      </div>
+      <div class="dashboard-grid">
+        <article class="metric"><span>Server</span><strong id="serverName">—</strong></article><article class="metric"><span>Online players</span><strong id="playerCount">—</strong></article><article class="metric"><span>Bedrock players</span><strong id="bedrockCount">—</strong></article><article class="metric"><span>Plugin</span><strong id="pluginStatus">—</strong></article>
+      </div>
+      <div class="panel table-panel"><div class="panel-title"><h3>Players</h3><span id="lastUpdated">Waiting for data</span></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Platform</th><th>Device</th><th>Language</th><th>Protocol</th></tr></thead><tbody id="playersBody"><tr><td colspan="5" class="empty">Connect to a PaperLive API to load players.</td></tr></tbody></table></div></div>
+    </section>
+
+    <section id="plugins" class="section alt"><div class="section-heading"><p class="eyebrow">ECOSYSTEM</p><h2>PaperLive projects</h2><p>Keep your Minecraft server tools together under one PaperLive website.</p></div><div class="cards"><article class="card"><span class="tag">SERVER</span><h3>PaperLive Dashboard</h3><p>Live server information, player data and plugin status through the PaperLive web API.</p></article><article class="card"><span class="tag">BEDROCK</span><h3>Geyser + Floodgate</h3><p>Designed to surface Bedrock player information when your server is configured with the appropriate integrations.</p></article><article class="card"><span class="tag">JAVA</span><h3>PaperLive Plugin</h3><p>Server-side Paper tooling for exposing the data that the web client needs.</p></article></div></section>
+
+    <section id="downloads" class="section"><div class="section-heading"><p class="eyebrow">DOWNLOADS</p><h2>PaperLive files</h2><p>Keep the complete website source and server-side project files in your project repository.</p></div><div class="download-box"><div><h3>PaperLive Website</h3><p>Static GitHub Pages website source: HTML, CSS, JavaScript and project documentation.</p></div><a class="button primary" href="https://github.com/tyeler964-web/tyeler964-web.github.io/archive/refs/heads/main.zip" target="_blank" rel="noopener">Download ZIP</a></div></section>
+
+    <section id="docs" class="section alt"><div class="section-heading"><p class="eyebrow">DOCUMENTATION</p><h2>Setup notes</h2></div><div class="docs"><div><h3>1. Host the website</h3><p>This site is hosted from the <code>main</code> branch using GitHub Pages.</p></div><div><h3>2. Run the PaperLive server plugin</h3><p>Configure the plugin's web API endpoint and API key on your Minecraft server.</p></div><div><h3>3. Connect</h3><p>Enter the API URL above. Your browser then requests data from your server. The API must permit browser requests (CORS) for the GitHub Pages origin.</p></div></div></section>
+
+    <section id="connect" class="section"><div class="section-heading"><p class="eyebrow">LINKS</p><h2>PaperLive online</h2></div><div class="link-grid"><a class="link-card" href="https://github.com/tyeler964-web/tyeler964-web.github.io" target="_blank" rel="noopener"><strong>GitHub Repository</strong><span>Source files and project history →</span></a><a class="link-card" href="https://tyeler964-web.github.io/" target="_blank" rel="noopener"><strong>PaperLive Website</strong><span>Open the live GitHub Pages site →</span></a></div></section>
+  </main>
+
+  <footer><div><strong>PaperLive</strong><span>Firefly Studios</span></div><span>Hosted on GitHub Pages</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>
