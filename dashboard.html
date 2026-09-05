@@ -11,25 +11,41 @@
   <div class="site-version" aria-label="Website version">v1.1.0</div>
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="Firefly Studios home"><span class="brand-mark">FS</span><span>Firefly Studios</span></a>
-    <button class="menu" id="menuButton" aria-label="Open navigation">☰</button>
+    <button class="menu" id="menuButton" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
     <nav id="nav"><a href="index.html">Home</a><a href="index.html#products">Plugins & Extensions</a><a href="index.html#paperlive">PaperLive</a></nav>
   </header>
   <main>
     <section class="section dashboard-page">
       <div class="section-heading"><p class="eyebrow">PAPERLIVE</p><h1 class="dashboard-title">Dashboard</h1><p>Connect to your PaperLive server web API to view live server and player information.</p></div>
+
       <div class="panel connect-panel">
-        <label>Web API URL<input id="apiUrl" type="url" placeholder="https://your-server.example/api"></label>
-        <label>API Key<input id="apiKey" type="password" placeholder="Optional API key"></label>
-        <div class="actions"><button class="button primary" id="connectButton">Connect</button><button class="button secondary" id="clearButton">Clear</button></div>
-        <p id="connectStatus" class="status">Not connected.</p>
+        <label>Server name<input id="serverNameInput" type="text" maxlength="80" placeholder="My Minecraft Server"></label>
+        <label>Server IP / hostname<input id="serverIp" type="text" autocomplete="off" placeholder="play.example.com"></label>
+        <label>Server port<input id="serverPort" type="number" min="1" max="65535" inputmode="numeric" placeholder="25565"></label>
+        <label>Web API port<input id="serverApiPort" type="number" min="1" max="65535" inputmode="numeric" placeholder="8080"></label>
+        <label>Web API URL<input id="apiUrl" type="url" autocomplete="url" placeholder="https://your-server.example/api"></label>
+        <label>API Key<input id="apiKey" type="password" autocomplete="off" placeholder="Optional API key"></label>
+        <div class="actions"><button class="button primary" id="connectButton" type="button">Connect</button><button class="button secondary" id="saveServerButton" type="button">Save Server</button><button class="button secondary" id="clearButton" type="button">Clear</button></div>
+        <p id="connectStatus" class="status" role="status" aria-live="polite">Not connected.</p>
       </div>
+
+      <div class="panel saved-panel">
+        <div class="panel-title"><h3>Saved Servers</h3><button class="button secondary" id="clearSavedServersButton" type="button">Clear All</button></div>
+        <div id="savedServers"><p class="empty">No saved servers yet.</p></div>
+        <p class="storage-note">Saved server profiles stay in this browser's local storage. They are not uploaded to GitHub Pages.</p>
+      </div>
+
       <div class="dashboard-grid">
-        <article class="metric"><span>Server</span><strong id="serverName">—</strong></article><article class="metric"><span>Online players</span><strong id="playerCount">—</strong></article><article class="metric"><span>Bedrock players</span><strong id="bedrockCount">—</strong></article><article class="metric"><span>Plugin</span><strong id="pluginStatus">—</strong></article>
+        <article class="metric"><span>Server</span><strong id="serverName">—</strong></article>
+        <article class="metric"><span>Online players</span><strong id="playerCount">—</strong></article>
+        <article class="metric"><span>Bedrock players</span><strong id="bedrockCount">—</strong></article>
+        <article class="metric"><span>Plugin</span><strong id="pluginStatus">—</strong></article>
       </div>
       <div class="panel table-panel"><div class="panel-title"><h3>Players</h3><span id="lastUpdated">Waiting for data</span></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Platform</th><th>Device</th><th>Language</th><th>Protocol</th></tr></thead><tbody id="playersBody"><tr><td colspan="5" class="empty">Connect to a PaperLive API to load players.</td></tr></tbody></table></div></div>
     </section>
   </main>
   <footer><div><strong>Firefly Studios</strong><span>PaperLive Dashboard</span></div><a href="index.html">Back to Firefly Studios</a></footer>
+  <script src="server-storage.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
