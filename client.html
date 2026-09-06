@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="PaperLive Bedrock Client — Firefly Studios">
+<title>PaperLive Bedrock Client</title>
+<link rel="stylesheet" href="client.css">
+</head>
+<body>
+<div class="topbar"><a href="index.html" class="brand"><b>FS</b> Firefly Studios</a><span id="connectionPill" class="pill offline">Offline</span></div>
+<div class="app-shell">
+<aside class="sidebar">
+<h1>PaperLive</h1><p class="muted">Bedrock Client</p>
+<nav id="clientNav">
+<button class="active" data-view="overview">⌂ Overview</button>
+<button data-view="servers">◈ Servers</button>
+<button data-view="voice">◉ Voice Chat</button>
+<button data-view="chat">◇ Chat</button>
+<button data-view="packs">▣ Packs & Addons</button>
+<button data-view="performance">◌ Performance</button>
+<button data-view="settings">⚙ Settings</button>
+</nav>
+<div class="sidebar-footer"><span id="buildLabel">Client v2.0.0</span><span>Render-ready</span></div>
+</aside>
+<main class="main">
+<section id="view-overview" class="view active"><div class="hero"><div><span class="eyebrow">PAPERLIVE BEDROCK CLIENT</span><h2>Everything for your server, in one place.</h2><p>Manage supported server connections, voice rooms, chat, packs and client capabilities from one responsive web app.</p></div><button class="primary" data-open="servers">Connect Server</button></div>
+<div class="grid cards"><article><span>Connection</span><strong id="overviewConnection">Not connected</strong><small>Server bridge status</small></article><article><span>Players</span><strong id="overviewPlayers">0</strong><small>Players reported by bridge</small></article><article><span>Voice room</span><strong id="overviewVoice">Not joined</strong><small>WebRTC support detected</small></article><article><span>Storage</span><strong id="overviewStorage">Browser only</strong><small>No files uploaded automatically</small></article></div>
+<div class="panel"><div class="panel-head"><h3>Client capabilities</h3><button class="ghost" id="refreshCapabilities">Refresh</button></div><div id="capabilities" class="capability-grid"></div></div>
+</section>
+<section id="view-servers" class="view"><div class="page-head"><div><span class="eyebrow">SERVER CONTROL</span><h2>Servers</h2><p>Connect to a PaperLive-compatible server bridge.</p></div></div><div class="panel form-grid"><label>Server name<input id="serverName" placeholder="My Bedrock Server"></label><label>Bridge URL<input id="bridgeUrl" placeholder="https://your-bridge.example"></label><label>API key<input id="bridgeKey" type="password" placeholder="Optional"></label><div class="actions"><button class="primary" id="connectBridge">Connect</button><button class="ghost" id="disconnectBridge">Disconnect</button></div><p id="serverStatus" class="status">Not connected.</p></div><div class="panel"><div class="panel-head"><h3>Live players</h3><span id="playerSummary">0 players</span></div><div id="playerList" class="list empty">Connect a bridge to load player information.</div></div></section>
+<section id="view-voice" class="view"><div class="page-head"><div><span class="eyebrow">REAL-TIME AUDIO</span><h2>Voice Chat</h2><p>Browser WebRTC voice with server-side room signaling. Voice recording is off by default.</p></div></div><div class="voice-grid"><div class="panel"><h3>Room</h3><label>Room code<input id="voiceRoom" value="lobby" maxlength="40"></label><div class="actions"><button class="primary" id="joinVoice">Join Voice</button><button class="ghost" id="leaveVoice">Leave</button></div><div class="voice-meter"><span id="voiceState">Not connected</span><span id="voiceUsers">0 / 10</span></div><button class="secondary wide" id="muteVoice">Mute microphone</button></div><div class="panel"><h3>Audio controls</h3><label>Output volume<input id="volume" type="range" min="0" max="100" value="80"></label><label>Input sensitivity<input id="sensitivity" type="range" min="0" max="100" value="50"></label><p class="notice">Microphone permission is requested only when you join a voice room.</p></div></div></section>
+<section id="view-chat" class="view"><div class="page-head"><div><span class="eyebrow">MESSAGING</span><h2>Chat</h2><p>Client chat UI with optional bridge-backed messaging.</p></div></div><div class="panel chat"><div id="chatMessages" class="chat-messages"><div class="system-message">Welcome to PaperLive chat.</div></div><form id="chatForm"><input id="chatInput" maxlength="500" placeholder="Type a message…"><button class="primary">Send</button></form></div></section>
+<section id="view-packs" class="view"><div class="page-head"><div><span class="eyebrow">CONTENT</span><h2>Packs & Addons</h2><p>Import Minecraft files through the browser. Installation remains user-controlled and device-dependent.</p></div></div><div class="panel upload-panel"><input id="packInput" type="file" multiple accept=".mcpack,.mcworld,.mcaddon,.mctemplate,.zip"><button class="primary" id="inspectPacks">Inspect selected files</button><div id="packList" class="list empty">No files selected.</div><p class="notice">This client never silently modifies another app's protected storage.</p></div></section>
+<section id="view-performance" class="view"><div class="page-head"><div><span class="eyebrow">PERFORMANCE</span><h2>Performance</h2><p>Browser/device diagnostics and connection telemetry. This does not directly alter Minecraft's renderer.</p></div></div><div class="grid cards"><article><span>Network</span><strong id="netType">Checking…</strong><small>Browser-reported connection</small></article><article><span>Memory</span><strong id="memoryInfo">Unavailable</strong><small>Only exposed by supported browsers</small></article><article><span>Hardware threads</span><strong id="cpuInfo">—</strong><small>Logical processors</small></article><article><span>Display</span><strong id="displayInfo">—</strong><small>Viewport resolution</small></article></div><div class="panel"><h3>Connection test</h3><button class="primary" id="pingTest">Test API latency</button><p id="pingResult" class="status">Not tested.</p></div></section>
+<section id="view-settings" class="view"><div class="page-head"><div><span class="eyebrow">SETTINGS</span><h2>Settings</h2></div></div><div class="panel settings-list"><label><input type="checkbox" id="backgroundSync"> Enable supported background sync</label><label><input type="checkbox" id="saveProfiles" checked> Save server profiles locally</label><label><input type="checkbox" id="noRecording" checked disabled> Voice recording disabled by default</label><button class="danger" id="resetClient">Reset client data</button></div></section>
+</main></div>
+<script src="client.js"></script>
+</body></html>
