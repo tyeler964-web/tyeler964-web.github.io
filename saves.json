@@ -1,1 +1,4 @@
-
+{
+  'saves-folder': "storage"
+  'maximum-saves-sec': "20"
+  'max-folder-size': "
