@@ -17,3 +17,17 @@ services:
       - path: /*
         name: X-Frame-Options
         value: SAMEORIGIN
+
+  - type: web
+    runtime: node
+    name: paperlive-api
+    branch: main
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeployTrigger: commit
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SERVER_NAME
+        value: PaperLive Bridge
