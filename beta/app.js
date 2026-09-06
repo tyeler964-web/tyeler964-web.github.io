@@ -33,3 +33,4 @@
   $('runButton').onclick=()=>{if(activeFile){log('Run requested for '+FLBackend.get(activeFile)?.name);log('Browser beta runner: arbitrary Java/JS/TS execution is intentionally not enabled by this static build.')}else log('Select a source file before running.')};
   $('clearConsole').onclick=()=>$('console').textContent='';$('resetButton').onclick=()=>{if(confirm('Reset the FL Code Beta workspace?')){FLBackend.reset();activeFile=null;selectedId=null;$('editor').value='';renderTree();log('Workspace reset.')}};
 })();
+
