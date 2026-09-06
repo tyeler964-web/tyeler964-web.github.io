@@ -16,3 +16,4 @@
   async function check(){try{const r=await fetch(UPDATE_URL,{cache:'no-store'});if(!r.ok)return;const d=await r.json();if(!d.updateId)return;const seen=localStorage.getItem(SEEN_KEY);if(firstCheck){if(seen&&seen!==d.updateId)showUpdate(d.message);localStorage.setItem(SEEN_KEY,d.updateId);firstCheck=false;}else if(seen!==d.updateId){localStorage.setItem(SEEN_KEY,d.updateId);showUpdate(d.message);setTimeout(()=>location.reload(),1800);}}catch{}}
   check(); setInterval(check,10000);
 })();
+
