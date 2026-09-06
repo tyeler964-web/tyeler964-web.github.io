@@ -119,3 +119,4 @@ if(apiUrl&&apiKey&&connectButton&&clearButton){
   $('clearSavedServersButton')?.addEventListener('click',()=>{window.PaperLiveStorage?.clear?.();renderSavedServers();});
   renderSavedServers();
 }
+
