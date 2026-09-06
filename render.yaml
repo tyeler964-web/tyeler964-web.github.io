@@ -1,0 +1,17 @@
+services:
+  - type: web
+    runtime: static
+    name: firefly-studios
+    buildCommand: echo "Static site — no build step required"
+    staticPublishPath: .
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
