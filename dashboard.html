@@ -8,15 +8,16 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="site-version" aria-label="Website version">v1.1.0</div>
+  <div class="site-version" aria-label="Website version">v1.2.0 • Render ready</div>
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="Firefly Studios home"><span class="brand-mark">FS</span><span>Firefly Studios</span></a>
     <button class="menu" id="menuButton" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
-    <nav id="nav"><a href="index.html">Home</a><a href="index.html#products">Plugins & Extensions</a><a href="index.html#paperlive">PaperLive</a></nav>
+    <nav id="nav"><a href="index.html">Home</a><a href="index.html#products">Plugins & Extensions</a><a href="index.html#paperlive">PaperLive</a><a href="index.html#capabilities">Device Support</a></nav>
   </header>
   <main>
     <section class="section dashboard-page">
       <div class="section-heading"><p class="eyebrow">PAPERLIVE</p><h1 class="dashboard-title">Dashboard</h1><p>Connect to your PaperLive server web API to view live server and player information.</p></div>
+      <div class="panel compatibility-panel"><strong>Device-aware client</strong><p>This dashboard enables features only when your device supports them. Browser, operating-system, permission, network, and hardware differences can limit available features.</p><div id="deviceCapabilities" class="capability-grid" aria-live="polite"><div class="capability"><span>Checking device support…</span><strong>Checking</strong></div></div></div>
 
       <div class="panel connect-panel">
         <label>Server name<input id="serverNameInput" type="text" maxlength="80" placeholder="My Minecraft Server"></label>
@@ -32,7 +33,7 @@
       <div class="panel saved-panel">
         <div class="panel-title"><h3>Saved Servers</h3><button class="button secondary" id="clearSavedServersButton" type="button">Clear All</button></div>
         <div id="savedServers"><p class="empty">No saved servers yet.</p></div>
-        <p class="storage-note">Saved server profiles stay in this browser's local storage. They are not uploaded to GitHub Pages.</p>
+        <p class="storage-note">Saved server profiles stay in this browser's local storage. They are not uploaded by this static client.</p>
       </div>
 
       <div class="dashboard-grid">
@@ -47,6 +48,6 @@
   <footer><div><strong>Firefly Studios</strong><span>PaperLive Dashboard</span></div><a href="index.html">Back to Firefly Studios</a></footer>
   <script src="server-storage.js"></script>
   <script src="app.js"></script>
+  <script src="feature-capabilities.js"></script>
 </body>
 </html>
-
