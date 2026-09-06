@@ -11,3 +11,4 @@ const PaperLiveStorage = (() => {
   function clear(){localStorage.removeItem(KEY);}
   return {getAll,save,remove,clear};
 })();
+
