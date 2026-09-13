@@ -1,122 +1,32 @@
-const $ = id => document.getElementById(id);
-
-const menuButton = $('menuButton');
-const nav = $('nav');
-if (menuButton && nav) {
-  menuButton.addEventListener('click', () => {
-    const open = nav.classList.toggle('open');
-    menuButton.setAttribute('aria-expanded', String(open));
-  });
-}
-
-const apiUrl = $('apiUrl');
-const apiKey = $('apiKey');
-const connectButton = $('connectButton');
-const clearButton = $('clearButton');
-
-function setStatus(text, error=false){
-  const el = $('connectStatus');
-  if (!el) return;
-  el.textContent = text;
-  el.style.color = error ? 'var(--danger)' : 'var(--muted)';
-}
-function setText(id,value){ const el=$(id); if(el) el.textContent = value ?? '—'; }
-function normalizeUrl(value){
-  try{
-    const url = new URL(String(value||'').trim());
-    if(!['http:','https:'].includes(url.protocol)) return '';
-    return url.toString().replace(/\/$/,'');
-  }catch{return '';}
-}
-function buildApiUrl(ip, port){
-  const host=String(ip||'').trim(); const p=String(port||'').trim();
-  if(!host) return '';
-  if(/^https?:\/\//i.test(host)) return normalizeUrl(host);
-  const h=host.includes(':')&&!host.startsWith('[')?`[${host}]`:host;
-  return normalizeUrl(`http://${h}${p?`:${p}`:''}`);
-}
-
-function renderSavedServers(){
-  const list=$('savedServers');
-  if(!list || !window.PaperLiveStorage) return;
-  const profiles=window.PaperLiveStorage.getAll();
-  list.innerHTML='';
-  if(!profiles.length){ list.innerHTML='<p class="empty">No saved servers yet.</p>'; return; }
-  profiles.forEach(profile=>{
-    const row=document.createElement('div'); row.className='saved-server';
-    const info=document.createElement('div'); info.className='saved-server-info';
-    const title=document.createElement('strong'); title.textContent=profile.name||'My Server';
-    const details=document.createElement('span'); details.textContent=`${profile.ip||'No IP'}${profile.apiPort?`:${profile.apiPort}`:''}`;
-    info.append(title,details);
-    const actions=document.createElement('div'); actions.className='saved-server-actions';
-    const load=document.createElement('button'); load.className='button secondary'; load.type='button'; load.textContent='Load';
-    load.addEventListener('click',()=>{
-      if($('serverNameInput')) $('serverNameInput').value=profile.name||'';
-      if($('serverIp')) $('serverIp').value=profile.ip||'';
-      if($('serverPort')) $('serverPort').value=profile.port||'';
-      if($('serverApiPort')) $('serverApiPort').value=profile.apiPort||'';
-      if(apiKey) apiKey.value=profile.apiKey||'';
-      if(apiUrl) apiUrl.value=profile.apiUrl||buildApiUrl(profile.ip,profile.apiPort);
-    });
-    const remove=document.createElement('button'); remove.className='button danger-button'; remove.type='button'; remove.textContent='Delete';
-    remove.addEventListener('click',()=>{window.PaperLiveStorage.remove(profile.id);renderSavedServers();});
-    actions.append(load,remove); row.append(info,actions); list.appendChild(row);
-  });
-}
-
-function saveCurrentServer(){
-  if(!window.PaperLiveStorage) return;
-  const ip=$('serverIp')?.value.trim()||'';
-  const url=normalizeUrl(apiUrl?.value)||buildApiUrl(ip,$('serverApiPort')?.value);
-  if(!ip&&!url){setStatus('Enter an IP/hostname or Web API URL before saving.',true);return;}
-  window.PaperLiveStorage.save({
-    name:$('serverNameInput')?.value.trim()||'My Server', ip,
-    port:$('serverPort')?.value.trim()||'', apiPort:$('serverApiPort')?.value.trim()||'',
-    apiKey:apiKey?.value.trim()||'', apiUrl:url
-  });
-  renderSavedServers(); setStatus('Server saved in this browser.');
-}
-
-async function connect(){
-  const base=normalizeUrl(apiUrl?.value)||buildApiUrl($('serverIp')?.value,$('serverApiPort')?.value);
-  if(!base){setStatus('Enter a valid HTTP(S) API URL or IP/hostname and API port first.',true);return;}
-  if(apiUrl) apiUrl.value=base;
-  setStatus('Connecting…'); if(connectButton) connectButton.disabled=true;
-  const headers={}; const key=apiKey?.value.trim(); if(key) headers.Authorization=`Bearer ${key}`;
-  try{
-    const res=await fetch(base,{headers,cache:'no-store'});
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data=await res.json(); render(data); setStatus('Connected.');
-    setText('lastUpdated',`Updated ${new Date().toLocaleTimeString()}`);
-    localStorage.setItem('paperlive_api_url',base);
-  }catch(err){setStatus(`Could not connect: ${err instanceof Error?err.message:String(err)}. Check the URL, API, HTTPS/CORS settings, and API key.`,true);}
-  finally{if(connectButton) connectButton.disabled=false;}
-}
-
-function render(data){
-  if(!data||typeof data!=='object'){setStatus('The API returned invalid JSON data.',true);return;}
-  setText('serverName',data.server?.name??data.serverName??data.name);
-  const players=Array.isArray(data.players)?data.players:[];
-  setText('playerCount',data.onlinePlayers??data.playerCount??players.length);
-  setText('bedrockCount',data.bedrockPlayers??players.filter(p=>String(p?.platform||'').toLowerCase().includes('bedrock')).length);
-  setText('pluginStatus',data.plugin?.version?`Online v${data.plugin.version}`:(data.pluginStatus??'Online'));
-  const body=$('playersBody'); if(!body)return;
-  body.innerHTML=players.length?players.map(p=>`<tr><td>${esc(p?.name)}</td><td>${esc(p?.platform)}</td><td>${esc(p?.device)}</td><td>${esc(p?.language)}</td><td>${esc(p?.protocol)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No players online.</td></tr>';
-}
-function esc(v){return String(v??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function clearDashboard(){
-  localStorage.removeItem('paperlive_api_url');
-  if(apiUrl)apiUrl.value=''; if(apiKey)apiKey.value='';
-  ['serverName','playerCount','bedrockCount','pluginStatus'].forEach(id=>setText(id,'—'));
-  const body=$('playersBody'); if(body)body.innerHTML='<tr><td colspan="5" class="empty">Connect to a PaperLive API to load players.</td></tr>';
-  setText('lastUpdated','Waiting for data'); setStatus('Cleared.');
-}
-
-if(apiUrl&&apiKey&&connectButton&&clearButton){
-  const saved=normalizeUrl(localStorage.getItem('paperlive_api_url')); if(saved)apiUrl.value=saved;
-  connectButton.addEventListener('click',connect); clearButton.addEventListener('click',clearDashboard);
-  $('saveServerButton')?.addEventListener('click',saveCurrentServer);
-  $('clearSavedServersButton')?.addEventListener('click',()=>{window.PaperLiveStorage?.clear?.();renderSavedServers();});
-  renderSavedServers();
-}
-
+const $=id=>document.getElementById(id);let stream=null,rec=null,started=0,timerId=null,scene=0;const sources=[];const scenes=[{id:1,name:'Main Scene',sources:[]},{id:2,name:'Starting Soon',sources:[]},{id:3,name:'BRB',sources:[]}];
+const apiBase=localStorage.getItem('fbs_api_base')||'';
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2600)}
+function modal(title,html){$('modalTitle').textContent=title;$('modalBody').innerHTML=html;$('modal').classList.remove('hidden')}
+$('modalClose').onclick=()=>$('modal').classList.add('hidden');$('modal').onclick=e=>{if(e.target===$('modal'))$('modal').classList.add('hidden')};
+function renderScenes(){const el=$('sceneStrip');el.innerHTML='';scenes.forEach((s,i)=>{const b=document.createElement('button');b.className='scene '+(i===scene?'active':'');b.innerHTML=`<strong>${s.name}</strong><small>${s.sources.length} sources</small>`;b.onclick=()=>{scene=i;renderScenes();draw()};el.append(b)});const add=document.createElement('button');add.className='scene';add.textContent='＋ Scene';add.onclick=()=>{scenes.push({id:Date.now(),name:'New Scene',sources:[]});renderScenes()};el.append(add)}
+function renderSources(){const el=$('sourceList');el.innerHTML='';sources.forEach((s,i)=>{const row=document.createElement('div');row.className='source';row.innerHTML=`<span>☷</span><span>${s.icon}</span><b>${s.name}</b><button class="eye">${s.visible?'◉':'○'}</button>`;row.onclick=e=>{if(!e.target.classList.contains('eye')){document.querySelectorAll('.source').forEach(x=>x.classList.remove('selected'));row.classList.add('selected')}};row.querySelector('.eye').onclick=()=>{s.visible=!s.visible;renderSources();draw()};row.ondblclick=()=>{const n=prompt('Source name',s.name);if(n){s.name=n;renderSources()}};el.append(row)});$('previewHint').style.display=sources.some(s=>s.visible)?'none':'block'}
+function addSource(type){const presets={camera:{name:'Camera',icon:'▣'},screen:{name:'Screen Share',icon:'▤'},mic:{name:'Microphone',icon:'🎙'},chat:{name:'Chat Overlay',icon:'💬'},guest:{name:'Collab Camera',icon:'👥'},image:{name:'Image / Media',icon:'▧'},text:{name:'Text',icon:'T'}};const p=presets[type]||presets.image;sources.push({type,name:p.name,icon:p.icon,visible:true,stream:null});renderSources();draw();if(type==='camera')getCamera(sources.at(-1));if(type==='screen')getScreen(sources.at(-1));if(type==='mic')getMic()}
+$('addSourceBtn').onclick=()=>modal('Add Source',`<div class="setting"><button onclick="addSource('screen')">▤ Screen Share</button><button onclick="addSource('camera')">▣ Camera</button><button onclick="addSource('mic')">🎙 Microphone</button><button onclick="addSource('guest')">👥 Collab Camera</button><button onclick="addSource('chat')">💬 Unified Chat Overlay</button><button onclick="addSource('image')">▧ Image / Media</button><button onclick="addSource('text')">T Text</button></div><p>Screen sharing can include system/tab audio when your browser and OS expose an audio track.</p>`);
+async function getCamera(s){try{s.stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});s.video=document.createElement('video');s.video.srcObject=s.stream;s.video.muted=true;await s.video.play();draw()}catch(e){toast('Camera permission was not granted.')}}
+async function getScreen(s){try{s.stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});s.video=document.createElement('video');s.video.srcObject=s.stream;s.video.muted=true;await s.video.play();s.stream.getVideoTracks()[0].onended=()=>{s.visible=false;renderSources();draw()};draw()}catch(e){toast('Screen sharing was cancelled')}}
+async function getMic(){try{const st=await navigator.mediaDevices.getUserMedia({audio:true});addMixer('Microphone',st);toast('Microphone added')}catch(e){toast('Microphone permission was not granted')}}
+function addMixer(name,st){const id='m'+Date.now();const m=$('mixer');const c=document.createElement('div');c.className='channel';c.innerHTML=`<div class="channel-head"><b>${name}</b><span>🔊</span></div><div class="meter"><i></i></div><input type="range" min="0" max="100" value="80"><small>Monitoring: Monitor Off</small>`;m.append(c);c.querySelector('input').oninput=e=>toast(`${name}: ${e.target.value}%`);return id}
+$('micBtn').onclick=getMic;
+function draw(){const c=$('stage'),x=c.getContext('2d');x.fillStyle='#05070a';x.fillRect(0,0,c.width,c.height);const visible=sources.filter(s=>s.visible);visible.forEach((s,i)=>{if(s.video&&s.video.readyState>=2){const w=visible.length>1?c.width/2:c.width,h=visible.length>1?c.height/2:c.height,px=visible.length>1?(i%2)*w:0,py=visible.length>1?Math.floor(i/2)*h:0;x.drawImage(s.video,px,py,w,h)}else if(s.type==='chat'){drawChat(x)}else if(s.type==='text'){x.fillStyle='#fff';x.font='bold 52px system-ui';x.fillText('FBS Studios',60,100)}else if(s.type==='guest'){x.fillStyle='#151b24';x.fillRect(20,20,c.width/2-30,c.height/2-30);x.fillStyle='#8893a4';x.font='24px system-ui';x.fillText('Collab camera — waiting for guest',50,80) }})}
+function drawChat(x){x.fillStyle='#0c1118dd';x.fillRect(900,30,340,650);x.font='20px system-ui';chatMessages.forEach((m,i)=>{x.fillStyle=m.color;x.fillText(m.user,920,70+i*55);x.fillStyle='#fff';x.fillText(m.text,920,95+i*55)})}
+let chatMessages=[{user:'YouTube • PixelFan',text:'This setup looks awesome!',color='#ff6b78'},{user:'Twitch • StreamBuddy',text:'hello from Twitch 👋',color:'#ad8cff'},{user:'YouTube • Nova',text:'Can you see the game?',color:'#ff6b78'}];function renderChat(){const c=$('chat');c.innerHTML=chatMessages.map(m=>`<div class="msg"><b class="${m.color==='#ff6b78'?'yt':'tw'}">${m.user}</b>${m.text}</div>`).join('');c.scrollTop=c.scrollHeight;draw()}renderChat();
+function tick(){const s=Math.floor((Date.now()-started)/1000);$('timer').textContent=[s/3600|0,s%3600/60|0,s%60].map(n=>String(n).padStart(2,'0')).join(':')}
+async function start(){if(rec)return;try{const canvasStream=$('stage').captureStream(30);let tracks=[...canvasStream.getVideoTracks()];const audios=sources.filter(s=>s.stream&&s.stream.getAudioTracks().length).flatMap(s=>s.stream.getAudioTracks());if(audios.length)tracks.push(...audios);stream=new MediaStream(tracks);const mime=MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')?'video/webm;codecs=vp9,opus':'video/webm';rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:6000000});rec.ondataavailable=e=>{if(e.data.size&&window.FBSBackend?.socket?.readyState===1)window.FBSBackend.socket.send(e.data)};rec.start(1000);started=Date.now();timerId=setInterval(tick,1000);$('startBtn').disabled=true;$('stopBtn').disabled=false;$('streamState').textContent='LIVE';$('streamState').classList.add('live');toast('Local program stream started')}catch(e){toast('Streaming could not start: '+e.message)}}
+function stop(){if(rec)rec.stop();rec=null;stream?.getTracks().forEach(t=>t.stop());stream=null;clearInterval(timerId);$('startBtn').disabled=false;$('stopBtn').disabled=true;$('streamState').textContent='OFFLINE';$('streamState').classList.remove('live');toast('Stream stopped')}
+$('startBtn').onclick=start;$('stopBtn').onclick=stop;$('goLiveBtn').onclick=()=>modal('Go Live',`<p>Choose a destination. Your browser sends the composed program to the FBS backend; the backend is responsible for platform credentials and RTMP/RTMPS publishing.</p><button class="control primary" onclick="connectPlatform('youtube')">▶ YouTube</button><button class="control" onclick="connectPlatform('twitch')">◉ Twitch</button>`);
+$('recordBtn').onclick=async()=>{if(!rec){await start();toast('Recording the composed program locally');$('recordBtn').textContent='■ Stop Recording'}else{stop();$('recordBtn').textContent='● Record locally'}};
+$('studioModeBtn').onclick=()=>toast('Studio Mode: preview/program workflow enabled');$('transitionsBtn').onclick=()=>modal('Transitions',`<div class="setting"><label>Transition<select><option>Fade</option><option>Cut</option><option>Slide</option><option>Swipe</option><option>Stinger</option></select></label><label>Duration<input id="transDur" type="number" value="300" min="0" max="5000"> ms</label></div><button onclick="toast('Transition saved')">Save</button>`);
+$('overlaysBtn').onclick=()=>modal('Overlay Editor',`<p>Overlay sources are editable scene layers. Add Chat, Text, Image/Media, Camera or Screen Share from the Sources panel, then toggle visibility and reorder them.</p><div class="setting"><label>Canvas width<input value="1280"></label><label>Canvas height<input value="720"></label><label>Chat opacity<input type="range" value="90"></label><label>Chat position<select><option>Right</option><option>Left</option><option>Bottom</option></select></label></div>`);
+$('settingsBtn').onclick=()=>modal('Settings',`<div class="setting"><label>FBS backend URL<input id="apiBase" value="${apiBase}" placeholder="https://your-render-service.onrender.com"></label><label>Stream FPS<select><option>30</option><option>60</option></select></label></div><h3>Keybinds</h3><p><span class="kbd">F5</span> Start/stop stream</p><p><span class="kbd">F6</span> Record</p><p><span class="kbd">Ctrl+1</span> Main Scene &nbsp; <span class="kbd">Ctrl+2</span> Starting Soon &nbsp; <span class="kbd">Ctrl+3</span> BRB</p><button onclick="saveSettings()">Save Settings</button>`);
+function saveSettings(){localStorage.setItem('fbs_api_base',$('apiBase').value.trim().replace(/\/$/,''));toast('Settings saved');$('modal').classList.add('hidden')}
+$('helpBtn').onclick=()=>modal('FBS Studios',`<p>FBS Studios is a browser-based production studio inspired by the workflow of OBS-style apps.</p><p>Camera, microphone and screen capture use browser permissions. Screen-share audio is included when the selected browser/OS provides a display audio track.</p><p>YouTube and Twitch publishing requires the FBS backend plus your own OAuth application configuration. Never paste platform passwords or API secrets into the site.</p>`);
+async function connectPlatform(p){$('modal').classList.add('hidden');const base=localStorage.getItem('fbs_api_base');if(!base){toast('Set your FBS backend URL in Settings first');return}location.href=base+'/auth/'+p+'?return='+encodeURIComponent(location.href)}
+$('youtubeConn').querySelector('button').onclick=()=>connectPlatform('youtube');$('twitchConn').querySelector('button').onclick=()=>connectPlatform('twitch');
+window.addSource=addSource;window.connectPlatform=connectPlatform;window.saveSettings=saveSettings;
+window.addEventListener('keydown',e=>{if(e.key==='F5'){e.preventDefault();rec?stop():start()}if(e.key==='F6'){e.preventDefault();$('recordBtn').click()}if(e.ctrlKey&&['1','2','3'].includes(e.key)){scene=Number(e.key)-1;renderScenes()}});
+renderScenes();renderSources();setInterval(draw,1000/30);
