@@ -1,52 +1,27 @@
-# Firefly Studios / PaperLive
+# FBS Studios
 
-Firefly Studios — PaperLive, plugins, addons, and Minecraft Bedrock & Java tools.
+FBS Studios is a browser-based streaming production studio hosted on GitHub Pages, with an optional Render backend for OAuth, live-platform setup and FFmpeg relay.
 
-## PaperLive Bedrock Client
+## Included
+- OBS-style scenes and source list
+- Camera and screen-share capture
+- Display-audio capture when the browser exposes a display audio track
+- Microphone mixer UI
+- Unified YouTube + Twitch chat overlay architecture
+- Collab-camera source placeholder for guest workflows
+- Overlay editor and scene transitions
+- Keybinds: F5 stream, F6 record, Ctrl+1/2/3 scenes
+- YouTube and Twitch OAuth entry points
+- Backend WebSocket media relay using FFmpeg
 
-Open `client.html` for the new device-aware PaperLive Bedrock Client interface. It includes:
+## Important deployment note
+GitHub Pages can host the frontend but cannot safely run the streaming backend or hold OAuth client secrets. The included Render configuration deploys the backend separately. Set the backend URL in **Settings** in FBS Studios.
 
-- Server bridge connection and live player status
-- Realtime WebSocket signaling
-- Browser WebRTC microphone controls
-- 10-user voice-room limit enforced by the API
-- Chat room signaling
-- `.mcpack`, `.mcworld`, `.mcaddon`, `.mctemplate`, and ZIP file inspection/import UI
-- Device/browser capability detection
-- Network, memory, CPU, display, and API latency diagnostics
-- Local server profile/settings storage
-- Service-worker caching for supported browsers
-- Clear separation between browser capabilities and Minecraft-side bridge functionality
+Configure these Render environment variables on the backend:
+`PUBLIC_API_URL`, `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`.
 
-The browser client does not silently access another application's protected files. Minecraft-side control still requires an appropriate PaperLive/Minecraft bridge.
+Register OAuth redirect URLs as:
+- `https://YOUR-BACKEND-DOMAIN/auth/youtube/callback`
+- `https://YOUR-BACKEND-DOMAIN/auth/twitch/callback`
 
-## Render
-
-This repository's `render.yaml` defines two Render services:
-
-1. `firefly-studios` — the public static frontend.
-2. `paperlive-api` — the Node.js realtime API and WebSocket signaling service.
-
-The API exposes `/api/health`, `/api/status`, `/api/rooms`, `/api/chat`, and `/ws`.
-
-Both services use the `main` branch with automatic deploys on commits. Render's documentation confirms that linked services can automatically rebuild and redeploy when changes are pushed to the configured branch.
-
-## Deploy to Render
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tyeler964-web/tyeler964-web.github.io)
-
-Click the button, sign in to Render if needed, review the Blueprint, and approve the deployment. The Render account authorization/approval must be completed by the account owner.
-
-## Architecture
-
-```text
-Browser
-  ├─ Firefly static frontend
-  └─ PaperLive Bedrock Client
-        ├─ REST → paperlive-api
-        ├─ WebSocket → paperlive-api
-        └─ WebRTC microphone → browser permissions
-
-Minecraft server
-  └─ PaperLive/Minecraft-side bridge → paperlive-api
-```
+Do not put client secrets, stream keys, or passwords in GitHub Pages source code.

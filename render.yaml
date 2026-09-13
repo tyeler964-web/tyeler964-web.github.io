@@ -1,12 +1,11 @@
 services:
   - type: web
     runtime: static
-    name: firefly-studios
+    name: fbs-studios
     branch: main
-    buildCommand: echo "Firefly Studios static app — no build step required"
+    buildCommand: echo "FBS Studios static site"
     staticPublishPath: .
     autoDeployTrigger: commit
-    pullRequestPreviewsEnabled: true
     headers:
       - path: /*
         name: X-Content-Type-Options
@@ -17,20 +16,25 @@ services:
       - path: /*
         name: X-Frame-Options
         value: SAMEORIGIN
-
   - type: web
-    runtime: node
-    name: paperlive-api
+    runtime: docker
+    name: fbs-studios-backend
     branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
     autoDeployTrigger: commit
     healthCheckPath: /api/health
     envVars:
-      - key: NODE_ENV
-        value: production
-      - key: SERVER_NAME
-        value: PaperLive Bridge
-      - key: PAPERLIVE_API_KEY
+      - key: FRONTEND_URL
+        value: https://tyeler964-web.github.io/
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: YOUTUBE_CLIENT_ID
+        sync: false
+      - key: YOUTUBE_CLIENT_SECRET
+        sync: false
+      - key: TWITCH_CLIENT_ID
+        sync: false
+      - key: TWITCH_CLIENT_SECRET
         sync: false
