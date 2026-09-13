@@ -1,127 +1,14 @@
-import express from 'express';
-import cors from 'cors';
-import { WebSocketServer } from 'ws';
-import http from 'http';
-
-const app = express();
-app.use(cors());
-app.use(express.json({ limit: '256kb' }));
-
-const API_KEY = String(process.env.PAPERLIVE_API_KEY || '').trim();
-const rooms = new Map();
-const started = Date.now();
-
-function authorized(req) {
-  if (!API_KEY) return true;
-  const value = String(req.headers.authorization || '');
-  return value === `Bearer ${API_KEY}`;
-}
-
-function requireApiKey(req, res, next) {
-  if (!authorized(req)) return res.status(401).json({ error: 'Unauthorized' });
-  next();
-}
-
-app.get('/api/health', (req, res) => res.json({
-  ok: true,
-  service: 'PaperLive API',
-  version: '2.1.0',
-  uptime: Math.round((Date.now() - started) / 1000),
-  authentication: API_KEY ? 'required' : 'disabled'
-}));
-
-app.get('/api/status', requireApiKey, (req, res) => res.json({
-  server: { name: process.env.SERVER_NAME || 'PaperLive Demo Bridge', version: '2.1.0' },
-  onlinePlayers: 0,
-  bedrockPlayers: 0,
-  players: [],
-  plugin: { name: 'PaperLive Bridge', version: '2.1.0' },
-  capabilities: ['status', 'chat-signaling', 'voice-signaling', 'webrtc-mesh', 'client-capabilities']
-}));
-
-app.get('/api/rooms', requireApiKey, (req, res) => res.json({
-  rooms: [...rooms.entries()].map(([id, set]) => ({ id, users: set.size, limit: 10 }))
-}));
-
-app.post('/api/chat', requireApiKey, (req, res) => {
-  const text = typeof req.body?.text === 'string' ? req.body.text.trim().slice(0, 500) : '';
-  if (!text) return res.status(400).json({ error: 'message required' });
-  res.json({ ok: true, message: { text, createdAt: new Date().toISOString() } });
-});
-
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server, path: '/ws' });
-
-function send(ws, obj) {
-  if (ws.readyState === 1) ws.send(JSON.stringify(obj));
-}
-
-function broadcast(room, obj, except) {
-  for (const ws of room || []) if (ws !== except) send(ws, obj);
-}
-
-wss.on('connection', (ws, req) => {
-  let roomId = null;
-  let authenticated = !API_KEY;
-  let joined = false;
-  const userId = Math.random().toString(36).slice(2, 10);
-  ws.userId = userId;
-
-  ws.on('message', raw => {
-    let m;
-    try { m = JSON.parse(raw); } catch { return; }
-
-    if (m.type === 'auth') {
-      if (!API_KEY || String(m.key || '') === API_KEY) {
-        authenticated = true;
-        send(ws, { type: 'authenticated' });
-      } else {
-        send(ws, { type: 'error', code: 'UNAUTHORIZED', message: 'Invalid PaperLive API key.' });
-        ws.close(1008, 'Unauthorized');
-      }
-      return;
-    }
-
-    if (!authenticated) {
-      send(ws, { type: 'error', code: 'UNAUTHORIZED', message: 'Authenticate before joining.' });
-      return;
-    }
-
-    if (m.type === 'join') {
-      if (joined) return;
-      const id = String(m.room || 'lobby').slice(0, 40);
-      let room = rooms.get(id);
-      if (!room) { room = new Set(); rooms.set(id, room); }
-      if (room.size >= 10) {
-        send(ws, { type: 'error', code: 'ROOM_FULL', message: 'This voice room is full (10 users maximum).' });
-        return;
-      }
-      roomId = id;
-      joined = true;
-      const existing = [...room].map(peer => peer.userId);
-      room.add(ws);
-      ws.roomId = id;
-      send(ws, { type: 'joined', room: id, userId, users: room.size, existing });
-      broadcast(room, { type: 'user-joined', userId, users: room.size }, ws);
-    } else if (m.type === 'signal' && roomId) {
-      const target = [...(rooms.get(roomId) || [])].find(peer => peer.userId === m.to);
-      if (target) send(target, { type: 'signal', from: userId, data: m.data });
-    } else if (m.type === 'chat' && roomId) {
-      const text = String(m.text || '').trim().slice(0, 500);
-      if (!text) return;
-      broadcast(rooms.get(roomId), { type: 'chat', from: userId, text, createdAt: new Date().toISOString() });
-    }
-  });
-
-  ws.on('close', () => {
-    const room = rooms.get(roomId);
-    if (room) {
-      room.delete(ws);
-      broadcast(room, { type: 'user-left', userId, users: room.size });
-      if (!room.size) rooms.delete(roomId);
-    }
-  });
-});
-
-const port = Number(process.env.PORT || 10000);
-server.listen(port, '0.0.0.0', () => console.log(`PaperLive API listening on ${port}`));
+import express from 'express';import cors from 'cors';import crypto from 'node:crypto';import {spawn} from 'node:child_process';import http from 'node:http';import {WebSocketServer} from 'ws';
+const app=express(),server=http.createServer(app),wss=new WebSocketServer({noServer:true});app.use(express.json({limit:'1mb'}));app.use(cors({origin:true,credentials:true}));const PORT=process.env.PORT||10000,PUBLIC=process.env.PUBLIC_API_URL||`http://localhost:${PORT}`,FRONTEND=process.env.FRONTEND_URL||'https://tyeler964-web.github.io/';const sessions=new Map(),pending=new Map(),destinations=new Map();let ff=null;
+const rnd=()=>crypto.randomBytes(24).toString('base64url');const redirect=p=>`${PUBLIC}/auth/${p}/callback`;
+function getSession(req){return sessions.get(req.get('x-fbs-session')||req.query.session||'')}function auth(req,res,next){const s=getSession(req);if(!s)return res.status(401).json({error:'Not connected'});req.fbs=s;next()}
+app.get('/api/health',(q,r)=>r.json({ok:true,service:'FBS Studios Backend',version:'1.0.0',ffmpeg:!!ff}));
+app.get('/auth/:p',(req,res)=>{const p=req.params.p;if(!['youtube','twitch'].includes(p))return res.status(404).send('Unknown platform');const id=p==='youtube'?'YOUTUBE':'TWITCH';if(!process.env[id+'_CLIENT_ID'])return res.status(500).send(`${p} OAuth is not configured.`);const state=rnd();pending.set(state,{p,returnTo:req.query.return||FRONTEND});setTimeout(()=>pending.delete(state),600000);const q=new URLSearchParams({client_id:process.env[id+'_CLIENT_ID'],redirect_uri:redirect(p),response_type:'code',state});if(p==='youtube'){q.set('access_type','offline');q.set('prompt','consent');q.set('scope','https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.force-ssl');res.redirect('https://accounts.google.com/o/oauth2/v2/auth?'+q)}else{q.set('scope','channel:read:stream_key user:read:email chat:read');res.redirect('https://id.twitch.tv/oauth2/authorize?'+q)}});
+app.get('/auth/:p/callback',async(req,res)=>{const p=req.params.p,x=pending.get(req.query.state);pending.delete(req.query.state);if(!x)return res.status(400).send('Expired OAuth state');if(req.query.error)return res.status(400).send(String(req.query.error));try{let t,r;if(p==='youtube'){r=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({code:req.query.code,client_id:process.env.YOUTUBE_CLIENT_ID,client_secret:process.env.YOUTUBE_CLIENT_SECRET,redirect_uri:redirect(p),grant_type:'authorization_code'})})}else{r=await fetch('https://id.twitch.tv/oauth2/token',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({code:req.query.code,client_id:process.env.TWITCH_CLIENT_ID,client_secret:process.env.TWITCH_CLIENT_SECRET,redirect_uri:redirect(p),grant_type:'authorization_code'})})}t=await r.json();if(!r.ok)throw new Error(t.error_description||t.message||'Token exchange failed');const sid=rnd();sessions.set(sid,{id:sid,platform:p,access:t.access_token,refresh:t.refresh_token||null,expiresAt:Date.now()+Number(t.expires_in||3600)*1000});res.redirect(`${x.returnTo}${x.returnTo.includes('?')?'&':'?'}fbs_session=${sid}&connected=${p}`)}catch(e){res.status(500).send(e.message)}});
+async function refresh(s){if(s.expiresAt>Date.now()+60000)return;if(s.platform==='youtube'&&s.refresh){const r=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:process.env.YOUTUBE_CLIENT_ID,client_secret:process.env.YOUTUBE_CLIENT_SECRET,refresh_token:s.refresh,grant_type:'refresh_token'})});const t=await r.json();if(!r.ok)throw Error('YouTube token refresh failed');s.access=t.access_token;s.expiresAt=Date.now()+Number(t.expires_in||3600)*1000}else if(s.platform==='twitch'&&s.refresh){const r=await fetch('https://id.twitch.tv/oauth2/token?'+new URLSearchParams({grant_type:'refresh_token',refresh_token:s.refresh,client_id:process.env.TWITCH_CLIENT_ID,client_secret:process.env.TWITCH_CLIENT_SECRET}),{method:'POST'});const t=await r.json();if(r.ok){s.access=t.access_token;s.refresh=t.refresh_token||s.refresh;s.expiresAt=Date.now()+Number(t.expires_in||3600)*1000}}}
+async function api(s,url,opt={}){await refresh(s);const h={authorization:`Bearer ${s.access}`,'content-type':'application/json',...(opt.headers||{})};if(s.platform==='twitch')h['Client-Id']=process.env.TWITCH_CLIENT_ID;const r=await fetch(url,{...opt,headers:h}),d=await r.json();if(!r.ok)throw Error(d.error?.message||d.message||'Platform API error');return d}
+app.get('/api/status',auth,(req,res)=>res.json({connected:true,platform:req.fbs.platform}));
+app.post('/api/live/start',auth,async(req,res)=>{try{const t=[];if(req.body.youtube&&req.fbs.platform==='youtube'){const title=String(req.body.title||'FBS Studios Live').slice(0,100);const b=await api(req.fbs,'https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet,status,contentDetails',{method:'POST',body:JSON.stringify({snippet:{title},status:{privacyStatus:'public'},contentDetails:{enableAutoStart:true,enableAutoStop:true}})});const st=await api(req.fbs,'https://www.googleapis.com/youtube/v3/liveStreams?part=snippet,cdn',{method:'POST',body:JSON.stringify({snippet:{title},cdn:{frameRate:'30fps',resolution:'720p',ingestionType:'rtmp'}})});await api(req.fbs,`https://www.googleapis.com/youtube/v3/liveBroadcasts/bind?id=${b.id}&streamId=${st.id}&part=id,snippet,contentDetails,status`,{method:'POST'});t.push({platform:'youtube',url:st.cdn.ingestionInfo.ingestionAddress+'/'+st.cdn.ingestionInfo.streamName})}if(req.body.twitch&&req.fbs.platform==='twitch'){const k=await api(req.fbs,'https://api.twitch.tv/helix/streams/key');t.push({platform:'twitch',url:'rtmp://live.twitch.tv/app/'+k.data[0].stream_key})}if(!t.length)throw Error('Select a connected destination');destinations.set(req.fbs.id,t);res.json({ok:true,destinations:t.map(x=>x.platform)})}catch(e){res.status(400).json({error:e.message})}});
+app.post('/api/live/stop',auth,(req,res)=>{destinations.delete(req.fbs.id);try{ff?.stdin.end()}catch{}res.json({ok:true})});
+server.on('upgrade',(req,socket,head)=>{if(!req.url.startsWith('/ws/stream'))return socket.destroy();wss.handleUpgrade(req,socket,head,ws=>wss.emit('connection',ws,req))});wss.on('connection',(ws,req)=>{const s=sessions.get(new URL(req.url,'http://x').searchParams.get('session')),d=s&&destinations.get(s.id);if(!s||!d?.length){ws.close(1008);return}if(ff){ws.close(1013);return}const tee=d.map(x=>`[f=flv:onfail=ignore]${x.url}`).join('|');ff=spawn('ffmpeg',['-hide_banner','-loglevel','warning','-i','pipe:0','-c:v','libx264','-preset','veryfast','-tune','zerolatency','-b:v','4500k','-maxrate','4500k','-bufsize','9000k','-pix_fmt','yuv420p','-r','30','-g','60','-c:a','aac','-b:a','160k','-ar','48000','-f','tee',tee],{stdio:['pipe','ignore','pipe']});ff.stderr.on('data',x=>console.log(String(x)));ff.on('close',()=>{ff=null;try{ws.close()}catch{}});ws.on('message',x=>{if(ff?.stdin.writable)ff.stdin.write(x)});ws.on('close',()=>{try{ff?.stdin.end()}catch{}destinations.delete(s.id)})});
+server.listen(PORT,'0.0.0.0',()=>console.log(`FBS Studios backend listening on ${PORT}`));
