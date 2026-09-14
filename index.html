@@ -1,1 +1,36 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="FBS Studios browser streaming studio"><title>FBS Studios</title><link rel="stylesheet" href="styles.css"></head><body><div id="app"><header class="topbar"><div class="brand"><span class="brand-mark">FBS</span><span>FBS Studios</span><small>BROWSER STUDIO</small></div><div class="transport"><button id="startBtn" class="danger">● Start Stream</button><button id="stopBtn" disabled>■ Stop</button><span id="streamState" class="state">OFFLINE</span></div><div class="top-actions"><button id="settingsBtn">⚙ Settings</button><button id="helpBtn">?</button></div></header><main class="studio"><section class="preview-panel panel"><div class="panel-head"><strong>Program</strong><span id="fps">30 FPS</span><span id="timer">00:00:00</span></div><div class="preview-wrap"><canvas id="stage" width="1280" height="720"></canvas><div id="previewHint">Add a source to your scene</div></div><div class="scene-strip" id="sceneStrip"></div></section><aside class="sources-panel panel"><div class="panel-head"><strong>Sources</strong><button id="addSourceBtn">＋ Add</button></div><div id="sourceList" class="source-list"></div><div class="source-help">Drag sources to reorder. Use the eye to show/hide. Double-click a source to rename it.</div></aside><section class="mixer-panel panel"><div class="panel-head"><strong>Audio Mixer</strong><button id="micBtn">🎙 Add Mic</button></div><div id="mixer" class="mixer"></div></section><aside class="controls-panel panel"><div class="panel-head"><strong>Controls</strong></div><button class="control primary" id="goLiveBtn">Go Live</button><button class="control" id="recordBtn">● Record locally</button><button class="control" id="studioModeBtn">◫ Studio Mode</button><button class="control" id="transitionsBtn">↝ Transitions</button><button class="control" id="overlaysBtn">▣ Overlay Editor</button><div class="connections"><h4>Connections</h4><div class="connection" id="youtubeConn"><span>▶</span><b>YouTube</b><em>Not connected</em><button>Connect</button></div><div class="connection" id="twitchConn"><span>◉</span><b>Twitch</b><em>Not connected</em><button>Connect</button></div></div></aside><section class="chat-panel panel"><div class="panel-head"><strong>Unified Live Chat</strong><span>YouTube + Twitch</span></div><div id="chat" class="chat"></div><div class="chat-compose"><input id="chatInput" placeholder="Chat overlay preview (local)" disabled><button disabled>Send</button></div></section></main></div><div id="modal" class="modal hidden"><div class="modal-card"><div class="modal-head"><h2 id="modalTitle">FBS Studios</h2><button id="modalClose">×</button></div><div id="modalBody"></div></div></div><div id="toast" class="toast"></div><script src="app.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sweet Core</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at top,#1b2a45,#080b12 60%);color:#fff;display:grid;place-items:center;padding:24px}.card{width:min(560px,100%);background:rgba(16,22,34,.94);border:1px solid #334155;border-radius:22px;padding:32px;box-shadow:0 20px 70px #0008;text-align:center}.logo{font-size:42px;font-weight:800;margin-bottom:8px}.sub{color:#aab6c8;margin-bottom:28px}.field{display:flex;gap:10px;margin-top:18px}input{flex:1;padding:14px 16px;border-radius:12px;border:1px solid #475569;background:#0b1220;color:#fff;font-size:16px}button,a.btn{border:0;border-radius:12px;padding:14px 18px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}.unlock{background:#7c3aed;color:white}.download{background:#22c55e;color:#07130a;width:100%;margin-top:20px}.error{color:#fb7185;min-height:24px;margin-top:12px}.hidden{display:none}.small{font-size:13px;color:#8290a5;margin-top:18px}.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#172554;color:#93c5fd;font-size:12px;font-weight:700;margin-bottom:16px}
+</style>
+</head>
+<body>
+<main class="card">
+  <section id="gate">
+    <div class="badge">SWEET CORE</div>
+    <div class="logo">Sweet Core</div>
+    <div class="sub">Enter the access code to continue.</div>
+    <div class="field"><input id="code" type="password" autocomplete="off" placeholder="Access code"><button class="unlock" id="unlock">Enter</button></div>
+    <div class="error" id="error"></div>
+  </section>
+  <section id="content" class="hidden">
+    <div class="badge">ACCESS GRANTED</div>
+    <div class="logo">Sweet Core Addon</div>
+    <div class="sub">Download the current Sweet Core Bedrock Dedicated Server addon.</div>
+    <a class="btn download" href="https://github.com/tyeler964-web/tyeler964-web.github.io/tree/main/downloads" target="_blank" rel="noopener">Download Sweet Core</a>
+    <div class="small">If the download page does not contain the ZIP yet, the repository is still publishing the latest addon package.</div>
+  </section>
+</main>
+<script>
+const ACCESS_CODE='Mg7S4b';
+const gate=document.getElementById('gate'),content=document.getElementById('content'),code=document.getElementById('code'),error=document.getElementById('error');
+function unlock(){if(code.value===ACCESS_CODE){gate.classList.add('hidden');content.classList.remove('hidden');sessionStorage.setItem('sweetCoreAccess','1')}else{error.textContent='Incorrect access code.';code.select()}}
+document.getElementById('unlock').addEventListener('click',unlock);code.addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
+if(sessionStorage.getItem('sweetCoreAccess')==='1'){gate.classList.add('hidden');content.classList.remove('hidden')}
+</script>
+</body>
+</html>
